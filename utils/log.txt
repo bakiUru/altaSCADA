@@ -1,0 +1,31 @@
+
+PMC: Tamales - Codigo: Z555 - Hardware: RTUX - Fecha: 2026-04-24 08:59:14 - CREADO con Éxito
+PMC: ricos - Codigo: Z444 - Hardware: RTU+ - Fecha: 2026-04-24 09:15:43 - ERROR al dar de Alta el PMC
+PMC: Tamales - Codigo: Z444 - Hardware: RTUX - Fecha: 2026-04-24 09:19:44 - CREADO con Éxito
+PMC: Asamblea - Codigo: Z546 - Hardware: RTUX - Fecha: 2026-04-24 09:22:56 - ERROR al dar de Alta el PMC
+PMC: Tamales2 - Codigo: Z4545 - Hardware: RTUX - Fecha: 2026-04-24 09:31:39 - CREADO con Éxito
+PMC: Tamales - Codigo: Z333 - Hardware: RTU+ - Fecha: 2026-04-24 09:44:42 - CREADO con Éxito
+PMC: Tamales - Codigo: Z125 - Hardware: RTU+ - Fecha: 2026-04-24 09:58:07 - ERROR al dar de Alta el PMC
+PMC: Lola - Codigo: Z454 - Hardware: RTU+ - Fecha: 2026-04-24 10:08:21 - ERROR al dar de Alta el PMC
+PMC: Tamales - Codigo: Z111 - Hardware: RTU+ - Fecha: 2026-04-30 09:15:46 - ERROR al dar de Alta el PMC
+PMC: Tamales - Codigo: Z111 - Hardware: RTUX - Fecha: 2026-04-30 09:21:48 - ERROR al dar de Alta el PMC
+PMC: Tamales - Codigo: Z111 - Hardware: RTU+ - Fecha: 2026-04-30 09:22:08 - CREADO con Éxito
+PMC: Tamales - Codigo: Z121 - Hardware: RTUX - Fecha: 2026-04-30 09:28:19 - CREADO con Éxito
+PMC: Tiralo - Codigo: Z233 - Hardware: RTUX - Fecha: 2026-04-30 10:24:53 - CREADO con Éxito
+PMC: Nuevo - Codigo: Z555 - Hardware: RTUX - Fecha: 2026-04-30 11:12:08 - CREADO con Éxito
+PMC: Otro - Codigo: Z333 - Hardware: RTUX - Fecha: 2026-04-30 11:15:50 - CREADO con Éxito
+PMC: prueba - Codigo: Z111 - Hardware: RTUX - Fecha: 2026-04-30 11:23:24 - CREADO con Éxito
+PMC: nuevo - Codigo: Z555 - Hardware: RTUX - Fecha: 2026-04-30 11:38:34 - CREADO con Éxito
+PMC: ZListo - Codigo: Z777 - Hardware: RTUX - Fecha: 2026-04-30 11:40:21 - CREADO con Éxito
+PMC: Ultimo - Codigo: Z588 - Hardware: RTUX - Fecha: 2026-04-30 11:46:20 - CREADO con Éxito
+PMC: Prueba1 - Codigo: Z454 - Hardware: RTU+ - Fecha: 2026-05-06 08:36:03 - CREADO con Éxito
+PMC: Prueba2 - Codigo: Z123 - Hardware: RTU+ - Fecha: 2026-05-06 08:38:23 - CREADO con Éxito
+PMC: Prueba3 - Codigo: Z232 - Hardware: RTU+ - Fecha: 2026-05-06 08:42:35 - CREADO con Éxito
+PMC: Listo - Codigo: Z545 - Hardware: RTUX - Fecha: 2026-05-06 08:43:31 - CREADO con Éxito
+PMC: PruebaDos - Codigo: Z544 - Hardware: RTUX - Fecha: 2026-05-06 09:04:35 - CREADO con Éxito
+PMC: Tag - Codigo: Z444 - Hardware: RTUX - Fecha: 2026-05-06 09:08:04 - CREADO con Éxito
+PMC: ddd - Codigo: z548 - Hardware: RTUX - Fecha: 2026-05-06 09:09:19 - CREADO con Éxito
+PMC: Tamales - Codigo: Z548 - Hardware: RTU+ - Fecha: 2026-05-06 09:14:07 - CREADO con Éxito
+PMC: Dada - Codigo: Z787 - Hardware: RTUX - Fecha: 2026-05-06 09:16:57 - CREADO con Éxito
+PMC: Listo - Codigo: Z888 - Hardware: RTU+ - Fecha: 2026-05-06 09:18:40 - CREADO con Éxito
+PMC: Ultimafila - Codigo: Z989 - Hardware: RTU+ - Fecha: 2026-05-06 09:25:03 - CREADO con Éxito
