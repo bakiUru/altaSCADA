@@ -29,3 +29,6 @@ PMC: Tamales - Codigo: Z548 - Hardware: RTU+ - Fecha: 2026-05-06 09:14:07 - CREA
 PMC: Dada - Codigo: Z787 - Hardware: RTUX - Fecha: 2026-05-06 09:16:57 - CREADO con Éxito
 PMC: Listo - Codigo: Z888 - Hardware: RTU+ - Fecha: 2026-05-06 09:18:40 - CREADO con Éxito
 PMC: Ultimafila - Codigo: Z989 - Hardware: RTU+ - Fecha: 2026-05-06 09:25:03 - CREADO con Éxito
+PMC: Vidaurreta - Codigo: Z328 - Hardware: RTU+ - Fecha: 2026-05-08 13:19:53 - CREADO con Éxito
+PMC: Democracia - Codigo: Z154 - Hardware: RTU+ - Fecha: 2026-05-08 13:21:47 - CREADO con Éxito
+PMC: Sca - Codigo: Zsada - Hardware: RTU+ - Fecha: 2026-05-08 13:34:32 - CREADO con Éxito

@@ -19,7 +19,7 @@ class App(ttk.Window):
 
     def init_ui(self):
         self.root.resizable(False, False)
-        self.root.iconbitmap("utils/logoOSE.ico")
+        self.root.iconbitmap("docs/logoOSE.ico")
         self.root.title("Alta Punto SCADA")
         self.root.geometry("600x620")
 
@@ -39,10 +39,11 @@ class App(ttk.Window):
         input_frame.pack(pady=(0,20), fill=X)
         
         #Input para el nombre del PMC
-        name_label = ttk.Label(input_frame, text="Nombre del PMC")
+        name_label = ttk.Label(input_frame, text="Nombre del PMC")  
         name_label.pack(pady=(0,10))
         self.pmc_name_var = ttk.StringVar()
         self.pmc_name_entry = ttk.Entry(input_frame, textvariable=self.pmc_name_var)
+        self.pmc_name_entry.focus()
         self.pmc_name_entry.pack(pady=(0,10))
         
         #Input para el Codigo del PMC
@@ -104,9 +105,10 @@ class App(ttk.Window):
         answer = Messagebox.yesno(
             f"PMC File - Confirmar datos\nNombre: {pmc_name}\nCodigo: {pmc_code}\nHardware: {hardware_type}", 
             "PMC File"
-        )  
+        )
 
         if answer != "Yes":
+            Messagebox.show_info("Cancelacion creacion de archivos PMC","PMC File")
             return
             
         # Crear carpeta
