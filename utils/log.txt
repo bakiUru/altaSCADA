@@ -22,3 +22,4 @@ PMC: Carreras nacionales este - Codigo: Z191 - Hardware: RTU+ - Fecha: 2026-05-1
 PMC: Confederada - Codigo: Z370 - Hardware: RTU+ - Fecha: 2026-05-11 13:00:15 - CREADO con Éxito
 PMC: Blanes - Codigo: Z245 - Hardware: RTU+ - Fecha: 2026-05-11 13:05:08 - CREADO con Éxito
 PMC: Agronomia - Codigo: Z390 - Hardware: RTU+ - Fecha: 2026-05-11 13:14:12 - CREADO con Éxito
+PMC: Mendoza e instrucciones - Codigo: Z335 - Hardware: RTU+ - Fecha: 2026-05-11 14:46:57 - CREADO con Éxito
