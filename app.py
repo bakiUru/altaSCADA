@@ -200,7 +200,7 @@ async def createCSVFile(hardware_name, pmc_name, pmc_code, last_codigo_pmc):
         contenido = contenido.replace(hardware_name, pmc_name)
         contenido = contenido.replace(pmc_name, pmc_code)  # Segunda pasada
         contenido = contenido.replace(pmc_code + " ", pmc_name +" ") # Tercera pasada para asegurar reemplazo completo
-        
+        contenido = contenido.replace(pmc_code + "-", pmc_name + " -")
         # Actualizar códigos
         nuevo_codigo_alarmas_PMC =  str(last_codigo_pmc[0])
         nuevo_codigo_alarmas_PMC_PC =  str(int(last_codigo_pmc[0])+2)
@@ -280,8 +280,8 @@ async def createTGDFile(pmc_code):
         
         print(f"✓ Archivo Xlsx creado: {tgd_filename}")
         # Cambio de Extensión a .tgd
-        os.rename(tgd_filename, f"OSEDIS_{pmc_code}.tgd")
-        print(f"✓ Archivo TGD renombrado: OSEDIS_{pmc_code}.tgd")
+        #os.rename(tgd_filename, f"OSEDIS_{pmc_code}.TGD")
+        #print(f"✓ Archivo TGD renombrado: OSEDIS_{pmc_code}.TGD")
         
     except FileNotFoundError:
         Messagebox.show_error("Archivo TagGrupo.xlsx no encontrado", "Error")
@@ -298,10 +298,10 @@ def moveFiles(pmc_code, pmc_name):
         os.makedirs(destination_folder, exist_ok=True)
         
         csv_source = f"{pmc_code}.csv"
-        tgd_source = f"OSEDIS_{pmc_code}.tgd"
+        tgd_source = f"OSEDIS_{pmc_code}.xlsx"
         
         csv_dest = os.path.join(destination_folder, f"{pmc_code}.csv")
-        tgd_dest = os.path.join(destination_folder, f"OSEDIS_{pmc_code}.tgd")
+        tgd_dest = os.path.join(destination_folder, f"OSEDIS_{pmc_code}.xlsx")
         
         if os.path.exists(csv_source):
             shutil.move(csv_source, csv_dest)
