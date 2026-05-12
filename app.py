@@ -199,8 +199,8 @@ async def createCSVFile(hardware_name, pmc_name, pmc_code, last_codigo_pmc):
         # Hacer reemplazos
         contenido = contenido.replace(hardware_name, pmc_name)
         contenido = contenido.replace(pmc_name, pmc_code)  # Segunda pasada
+        contenido = contenido.replace(hardware_name + "-", pmc_code + " -")
         contenido = contenido.replace(pmc_code + " ", pmc_name +" ") # Tercera pasada para asegurar reemplazo completo
-        contenido = contenido.replace(pmc_code + "-", pmc_name + " -")
         # Actualizar códigos
         nuevo_codigo_alarmas_PMC =  str(last_codigo_pmc[0])
         nuevo_codigo_alarmas_PMC_PC =  str(int(last_codigo_pmc[0])+2)
