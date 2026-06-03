@@ -7,9 +7,20 @@ import re
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
-
-ruta = "utils/codigosSIM.txt"
+from getDatos import read_codes_text, write_codes_text
+import ctypes
 ruta_alta = "PMC_Creados/"
+#llamamos a la funcion de conexion a la Api de Google Drive
+online_data = read_codes_text()
+print(f"Modo de lectura: {online_data['mode']} - Status: {online_data['status']}")
+
+
+# 1. Configurar el ID para la barra de tareas antes de crear la ventana
+try:
+    myappid = 'appAltaScada.1.1'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except Exception:
+    pass # Evita errores si se ejecuta en Mac o Linux
 
 class App(ttk.Window):
     def __init__(self, root):
@@ -19,9 +30,9 @@ class App(ttk.Window):
 
     def init_ui(self):
         self.root.resizable(False, False)
-        self.root.iconbitmap("utils/logoOSE.ico")
+        self.root.iconbitmap("docs/logoOSE.ico")
         self.root.title("Alta Punto SCADA")
-        self.root.geometry("600x620")
+        self.root.geometry("600x680")
 
     def createWidget(self):
         main_frame = ttk.Frame(self.root, padding=20)
@@ -33,16 +44,22 @@ class App(ttk.Window):
         
         #infomarcion de Tabla de Variables
         ttk.Label(main_frame, text="Tablas de Variables conforme version 1.0.7 del Programa control SGD-RTUX", font=("Arial", 8), bootstyle="secondary").pack(pady=(0,10))
-        
-        #frame para los inputs
+        if online_data["mode"] == "Error con Drive":
+            ttk.Label(main_frame, text="Error al conectar con Google Drive. Usando archivo local.", font=("Arial", 8), bootstyle="danger").pack(pady=(0,10))
+        else:
+            ttk.Label(main_frame, text="--App Sincronizada--", font=("Arial", 8), bootstyle="success").pack(pady=(0,10)) 
+    
+        #ttk.label(main_frame, text=f"Ultima Actualizacion: {time.strftime('%Y-%m-%d %H:%M:%S')}" )
+       #frame para los inputs
         input_frame = ttk.Labelframe(main_frame, text="Datos del PMC", padding=15)
         input_frame.pack(pady=(0,20), fill=X)
         
         #Input para el nombre del PMC
-        name_label = ttk.Label(input_frame, text="Nombre del PMC")
+        name_label = ttk.Label(input_frame, text="Nombre del PMC")  
         name_label.pack(pady=(0,10))
         self.pmc_name_var = ttk.StringVar()
         self.pmc_name_entry = ttk.Entry(input_frame, textvariable=self.pmc_name_var)
+        self.pmc_name_entry.focus()
         self.pmc_name_entry.pack(pady=(0,10))
         
         #Input para el Codigo del PMC
@@ -59,6 +76,8 @@ class App(ttk.Window):
         hardware_options = ["RTU+","RTUX"]
         for option in hardware_options:
             ttk.Radiobutton(input_frame, text=option, variable=self.hardware_var, value=option).pack(pady=(0,10))
+            
+        self.hardware_var.set(hardware_options[1])  # Selección por defecto 
         
         # SOLUCIÓN: Llamar correctamente la función asíncrona
         create_button = ttk.Button(
@@ -71,7 +90,7 @@ class App(ttk.Window):
         #footer con separador y texto de desarrollador
         ttk.Separator(main_frame, bootstyle="secondary").pack(pady=5, fill=X)
         ttk.Label(main_frame, text="Desarrollado por: Marcelo Rodriguez SGD - 2026", font=("Arial", 10), bootstyle="secondary").pack(pady=10)
-        ttk.Label(main_frame, text="Ver 1.0", font=("Arial", 9), bootstyle="secondary").pack(pady=(0,10))
+        ttk.Label(main_frame, text="Ver 1.1", font=("Arial", 9), bootstyle="secondary").pack(pady=(0,10))
 
     def handle_create_pmc(self):
         """
@@ -104,16 +123,17 @@ class App(ttk.Window):
         answer = Messagebox.yesno(
             f"PMC File - Confirmar datos\nNombre: {pmc_name}\nCodigo: {pmc_code}\nHardware: {hardware_type}", 
             "PMC File"
-        )  
+        )
 
         if answer != "Yes":
+            Messagebox.show_info("Cancelacion creacion de archivos PMC","PMC File")
             return
             
         # Crear carpeta
         createPMCFolder(pmc_name)
         
         # Buscar códigos
-        codigosPMC = searchPMCCode(ruta)
+        codigosPMC = searchPMCCode(ruta_alta)
         if not codigosPMC:
             return
         
@@ -197,8 +217,8 @@ async def createCSVFile(hardware_name, pmc_name, pmc_code, last_codigo_pmc):
         # Hacer reemplazos
         contenido = contenido.replace(hardware_name, pmc_name)
         contenido = contenido.replace(pmc_name, pmc_code)  # Segunda pasada
+        contenido = contenido.replace(hardware_name + "-", pmc_code + " -")
         contenido = contenido.replace(pmc_code + " ", pmc_name +" ") # Tercera pasada para asegurar reemplazo completo
-        
         # Actualizar códigos
         nuevo_codigo_alarmas_PMC =  str(last_codigo_pmc[0])
         nuevo_codigo_alarmas_PMC_PC =  str(int(last_codigo_pmc[0])+2)
@@ -278,8 +298,8 @@ async def createTGDFile(pmc_code):
         
         print(f"✓ Archivo Xlsx creado: {tgd_filename}")
         # Cambio de Extensión a .tgd
-        os.rename(tgd_filename, f"OSEDIS_{pmc_code}.tgd")
-        print(f"✓ Archivo TGD renombrado: OSEDIS_{pmc_code}.tgd")
+        #os.rename(tgd_filename, f"OSEDIS_{pmc_code}.TGD")
+        #print(f"✓ Archivo TGD renombrado: OSEDIS_{pmc_code}.TGD")
         
     except FileNotFoundError:
         Messagebox.show_error("Archivo TagGrupo.xlsx no encontrado", "Error")
@@ -296,10 +316,10 @@ def moveFiles(pmc_code, pmc_name):
         os.makedirs(destination_folder, exist_ok=True)
         
         csv_source = f"{pmc_code}.csv"
-        tgd_source = f"OSEDIS_{pmc_code}.tgd"
+        tgd_source = f"OSEDIS_{pmc_code}.xlsx"
         
         csv_dest = os.path.join(destination_folder, f"{pmc_code}.csv")
-        tgd_dest = os.path.join(destination_folder, f"OSEDIS_{pmc_code}.tgd")
+        tgd_dest = os.path.join(destination_folder, f"OSEDIS_{pmc_code}.xlsx")
         
         if os.path.exists(csv_source):
             shutil.move(csv_source, csv_dest)

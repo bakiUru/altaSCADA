@@ -25,7 +25,7 @@ Nombre + Codigo + Hardware -> validacion -> generacion de archivos -> carpeta PM
 - Crea una carpeta por cada PMC en `PMC_Creados/`.
 - Genera el `.csv` del PMC desde la plantilla de `RTU+` o `RTUX`.
 - Crea `OSEDIS_<codigo>.tgd` a partir de `utils/TagGrupo.xlsx`.
-- Actualiza `utils/codigosSIM.txt` con los proximos codigos disponibles.
+- Actualiza `utils/codigosSIM.txt` con los proximos codigos disponibles o con el archivo configurado en Google Drive.
 - Registra cada alta en `utils/log.txt`.
 
 ## Interfaz
@@ -40,11 +40,13 @@ Nombre + Codigo + Hardware -> validacion -> generacion de archivos -> carpeta PM
 - Python 3
 - `ttkbootstrap`
 - `openpyxl`
+- `google-auth`
+- `google-api-python-client`
 
 ## Instalacion
 
 ```bash
-pip install ttkbootstrap openpyxl
+pip install ttkbootstrap openpyxl google-auth google-api-python-client
 ```
 
 ## Ejecutar
@@ -87,6 +89,10 @@ AppAltaScada/
 
 - La aplicacion usa rutas relativas, por lo que debe ejecutarse desde la raiz del proyecto.
 - Si falta algun archivo en `utils/`, la generacion fallara y se mostrara un mensaje de error.
+- Para usar Google Drive, coloca el JSON de la cuenta de servicio en `credentials.json`.
+- El archivo de Drive debe estar compartido con el `client_email` de esa cuenta de servicio.
+- Si quieres apuntar a otro archivo de Drive, define `GOOGLE_DRIVE_TEXT_FILE_ID`.
+- El paquete se instala como `google-api-python-client`, pero en el código se importa como `googleapiclient`.
 
 ## Autor
 
