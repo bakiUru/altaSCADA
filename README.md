@@ -70,8 +70,7 @@ utils/
 ├── codigosSIM.txt
 ├── RTU+.csv
 ├── RTUX.csv
-├── TagGrupo.xlsx
-└── logoOSE.ico
+└── TagGrupo.xlsx
 ```
 
 ## Estructura del proyecto
