@@ -31,3 +31,5 @@ PMC: Agraciada - Codigo: Z327 - Hardware: RTU+ - Fecha: 2026-05-12 11:13:10 - CR
 PMC: Aconcagua - Codigo: Z232 - Hardware: RTU+ - Fecha: 2026-05-12 11:14:01 - CREADO con Éxito
 PMC: Edison - Codigo: Z362 - Hardware: RTU+ - Fecha: 2026-05-12 11:14:15 - CREADO con Éxito
 PMC: Corrales este - Codigo: Z195 - Hardware: RTUX - Fecha: 2026-05-12 14:41:50 - CREADO con Éxito
+PMC: Porueba2 - Codigo: Z6599 - Hardware: RTUX - Fecha: 2026-06-12 09:57:53 - CREADO con Éxito
+PMC: Prueba4 - Codigo: Z2131 - Hardware: RTUX - Fecha: 2026-06-12 10:25:17 - CREADO con Éxito

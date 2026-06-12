@@ -10,8 +10,12 @@ from ttkbootstrap.dialogs import Messagebox
 from getDatos import read_codes_text, write_codes_text
 import ctypes
 ruta_alta = "PMC_Creados/"
+ruta_codigos = "utils/codigosSIM.txt"
+
 #llamamos a la funcion de conexion a la Api de Google Drive
 online_data = read_codes_text()
+"""Capturamos la ultima fecha de actualización del archivo de códigos desde Drive o local para mostrar en la interfaz y para comparar si es necesario actualizar el archivo local. Si no se puede conectar a Drive, se asume que el archivo local es el más reciente."""""
+payload_time_refresh = online_data["payload"].splitlines()[2].strip()
 print(f"Modo de lectura: {online_data['mode']} - Status: {online_data['status']}")
 
 
@@ -50,7 +54,7 @@ class App(ttk.Window):
             ttk.Label(main_frame, text="--App Sincronizada--", font=("Arial", 8), bootstyle="success").pack(pady=(0,10)) 
     
         #ttk.label(main_frame, text=f"Ultima Actualizacion: {time.strftime('%Y-%m-%d %H:%M:%S')}" )
-       #frame para los inputs
+        #frame para los inputs
         input_frame = ttk.Labelframe(main_frame, text="Datos del PMC", padding=15)
         input_frame.pack(pady=(0,20), fill=X)
         
@@ -75,7 +79,12 @@ class App(ttk.Window):
         self.hardware_var = ttk.StringVar()
         hardware_options = ["RTU+","RTUX"]
         for option in hardware_options:
-            ttk.Radiobutton(input_frame, text=option, variable=self.hardware_var, value=option).pack(pady=(0,10))
+            if option == "RTU+":
+                ttk.Label(input_frame, text="-> Migracion Finalizada <-", font=("Arial", 9), bootstyle="secondary").pack(pady=(0,1))
+                ttk.Label(input_frame, text="Equipos en Deshuso", font=("Arial", 8), bootstyle="secondary").pack(pady=(0,1))
+                ttk.Radiobutton(input_frame, text=option, variable=self.hardware_var, value=option).pack(pady=(0,10))
+            else:
+                ttk.Radiobutton(input_frame, text=option, variable=self.hardware_var, value=option).pack(pady=(0,10))
             
         self.hardware_var.set(hardware_options[1])  # Selección por defecto 
         
@@ -133,7 +142,7 @@ class App(ttk.Window):
         createPMCFolder(pmc_name)
         
         # Buscar códigos
-        codigosPMC = searchPMCCode(ruta_alta)
+        codigosPMC = searchPMCCode(ruta_codigos)
         if not codigosPMC:
             return
         
@@ -153,17 +162,17 @@ class App(ttk.Window):
             Messagebox.show_error(f"Error al crear los archivos: {e}", "Error")
 
 
-def createPMCFolder(name):
+def createPMCFolder(name_folder:str) -> None:
     """Creacion de Carpeta PMC"""
-    folder_path = os.path.join(ruta_alta, name)
+    folder_path = os.path.join(ruta_alta, name_folder)
     try:
         os.makedirs(folder_path, exist_ok=True)  # exist_ok=True evita error si ya existe
-        print(f"Carpeta {name} creada con éxito")
+        print(f"Carpeta {name_folder} creada con éxito")
     except Exception as e:
         Messagebox.show_error(f"Error al crear carpeta: {e}", "Error")
 
 
-def refreshLogFile(data):
+def refreshLogFile(data:str) -> bool:
     """Actualiza el log de altas PMC"""
     try:
         with open("utils/log.txt", "a") as f:
@@ -175,9 +184,10 @@ def refreshLogFile(data):
         return False
 
       
-def searchPMCCode(ruta):
+def searchPMCCode(ruta:str) -> list:
     """Busca el codigo PMC en el archivo .txt"""
     list_codigo = []
+    print(f"Buscando códigos PMC en: {ruta}")
     try:
         with open(ruta, "r") as f:
             for line in f:
@@ -189,7 +199,7 @@ def searchPMCCode(ruta):
         return None
     
 
-async def createCSVFile(hardware_name, pmc_name, pmc_code, last_codigo_pmc):
+async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codigo_pmc:list)-> None:
     """Crea el archivo CSV del PMC"""
     """Códigos de referencia para alarmas PC"""
     ref_codigo_pmc = 997
@@ -245,7 +255,7 @@ async def createCSVFile(hardware_name, pmc_name, pmc_code, last_codigo_pmc):
 
         # Actualizar códigos en archivo de texto
         with open("utils/codigosSIM.txt", "w") as f:
-            f.write(f"{int(last_codigo_pmc[0]) + 3}\n{int(last_codigo_pmc[1]) + 1}")
+            f.write(f"{int(last_codigo_pmc[0]) + 3}\n{int(last_codigo_pmc[1]) + 1}\n{time.strftime('%Y-%m-%d %H:%M:%S')}")
         
         
         # AL FINALIZAR LA CREACION DEL CSV, SE MUEVEN LOS ARCHIVOS A LA CARPETA CORRESPONDIENTE
