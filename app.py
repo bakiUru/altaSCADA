@@ -202,9 +202,9 @@ def searchPMCCode(ruta:str) -> list:
 async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codigo_pmc:list)-> None:
     """Crea el archivo CSV del PMC"""
     """Códigos de referencia para alarmas PC"""
-    ref_codigo_pmc = 997
-    ref_codigo_doble_pmc = 999
-    ref_codigo_alarma = 157
+    ref_codigo_pmc = 1980
+    ref_codigo_doble_pmc = 1982
+    ref_codigo_alarma = 178
     
     codigo_alarma_PMC_PC = '"' + str(ref_codigo_pmc) + '"'
     codigo_alarma_PMC = '"' + str(ref_codigo_doble_pmc) + '"'
@@ -252,7 +252,9 @@ async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codi
         with open(csv_filename, "w", encoding="utf-8") as f:
             f.write(contenido)
         
-
+        #TODO: Implementar lógica de control y actualización de códigos en lo local como online del archivo de codigosSIM.txt
+        #Llamar funciones de updateDatos para comparacion de fechas y actualizacion del archivo de codigos
+        
         # Actualizar códigos en archivo de texto
         with open("utils/codigosSIM.txt", "w") as f:
             f.write(f"{int(last_codigo_pmc[0]) + 3}\n{int(last_codigo_pmc[1]) + 1}\n{time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -265,7 +267,7 @@ async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codi
         # Log de éxito
         refreshLogFile(
             f"PMC: {pmc_name} - Codigo: {pmc_code} - Hardware: {hardware_name} - "
-            f"Fecha: {time.strftime('%Y-%m-%d %H:%M:%S')} - CREADO con Éxito"
+            f"Fecha: {time.strftime('%Y-%m-%d %H:%M:%S')} - CREADO con Exito"
         )
         print(f"✓ Archivo CSV creado: {csv_filename}")
         

@@ -3,7 +3,7 @@ from time import time
 from datetime import datetime
 
 def update_codes_text(new_data:list,path_file:str) -> None:
-    """Actual.izacion del conternido del archivo local de codigos alarmas"""
+    """Actualizacion del contenido del archivo local de codigos alarmas"""
     local_path = os.path.join(os.path.dirname(__file__), path_file)
     try:
         with open(local_path, "w", encoding="utf-8") as f:
