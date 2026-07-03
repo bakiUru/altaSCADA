@@ -8,6 +8,7 @@ Flujo:
 
 from __future__ import annotations
 
+from datetime import datetime
 import io
 import os
 from pathlib import Path
@@ -29,8 +30,8 @@ def _read_local_codes_text() -> str:
     return LOCAL_CODES_PATH.read_text(encoding="utf-8")
 
 
-def _write_local_codes_text(content: str) -> None:
-    LOCAL_CODES_PATH.write_text(content, encoding="utf-8")
+def _write_local_codes_text(content: list) -> None:
+    LOCAL_CODES_PATH.write_text("\n".join(content), encoding="utf-8")
 
 
 def _build_drive_service():
@@ -85,13 +86,13 @@ def read_codes_text() -> dict | str:
     return {"payload": _read_local_codes_text(), "mode": "local", "status": "Usando Archivo Local"}
 
 
-def write_codes_text(content: str) -> None:
+def write_online_codes_text(content: list) -> None:
     """Escribe el contenido del archivo de codigos en Drive o en disco local."""
     if _drive_enabled():
         try:
             service = _build_drive_service()
         except (FileNotFoundError, RuntimeError):
-            _write_local_codes_text(content)
+           # _write_local_codes_text("\n".join(content))
             return
 
         try:
@@ -99,8 +100,9 @@ def write_codes_text(content: str) -> None:
         except ImportError as exc:
             raise RuntimeError("Falta google-api-python-client para subir a Drive") from exc
 
+        payload = "\n".join(content) + "\n" + datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         media_body = MediaIoBaseUpload(
-            io.BytesIO(content.encode("utf-8")),
+            io.BytesIO(payload.encode("utf-8")),
             mimetype="text/plain",
             resumable=False,
         )
@@ -112,7 +114,7 @@ def write_codes_text(content: str) -> None:
         return
 
     # Fallback local cuando no hay Drive o credenciales validas.
-    _write_local_codes_text(content)
+    #_write_local_codes_text(content)
 
 
 def get_data_from_api(url=None):
@@ -122,3 +124,4 @@ def get_data_from_api(url=None):
 
 if __name__ == "__main__":
     print(read_codes_text())
+    write_online_codes_text(["1150", "200"])

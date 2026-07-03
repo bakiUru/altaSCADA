@@ -8,7 +8,7 @@ def update_codes_text(new_data:list,path_file:str) -> None:
     try:
         with open(local_path, "w", encoding="utf-8") as f:
                 f.write("\n".join(new_data))
-                f.write(f"\n{time.strftime('%Y-%m-%d %H:%M:%S')}")  # Agrega una nueva línea al final del archivo
+                f.write(f"\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")  # Agrega una nueva línea al final del archivo
     except IOError as exc:
         raise RuntimeError(f"Error al escribir en el archivo {local_path}") from exc
 

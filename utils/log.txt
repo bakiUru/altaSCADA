@@ -24,3 +24,9 @@ PMC: Fco. capurro - Codigo: Z3101 - Hardware: RTUX - Fecha: 2026-06-16 09:39:05 
 PMC: Acevedo diaz - Codigo: Z246 - Hardware: RTUX - Fecha: 2026-06-26 08:30:02 - CREADO con Exito
 PMC: Barrio sur - Codigo: Z263 - Hardware: RTUX - Fecha: 2026-06-26 09:21:53 - CREADO con Exito
 PMC: Julio cesar - Codigo: Z269 - Hardware: RTUX - Fecha: 2026-06-26 10:51:43 - CREADO con Exito
+
+PMC: Dsad - Codigo: 213124 - Hardware: RTUX - Fecha: 2026-07-03 09:58:15 - CREADO con Exito
+PMC: Sada - Codigo: 243 - Hardware: RTUX - Fecha: 2026-07-03 10:01:57 - CREADO con Exito
+PMC: Asdd - Codigo: 23112 - Hardware: RTUX - Fecha: 2026-07-03 10:04:28 - CREADO con Exito
+PMC: Prueba - Codigo: 123123 - Hardware: RTUX - Fecha: 2026-07-03 10:08:36 - CREADO con Exito
+PMC: Wdsad - Codigo: 234 - Hardware: RTUX - Fecha: 2026-07-03 10:09:10 - CREADO con Exito

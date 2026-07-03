@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import os
 import time
 import shutil
@@ -7,7 +8,8 @@ import re
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
-from getDatos import read_codes_text, write_codes_text
+from getDatos import read_codes_text, write_online_codes_text
+from updateCodeSIM import update_codes_text, read_last_update_time, do_update
 import ctypes
 ruta_alta = "PMC_Creados/"
 ruta_codigos = "utils/codigosSIM.txt"
@@ -183,25 +185,42 @@ def refreshLogFile(data:str) -> bool:
         Messagebox.show_error(f"Error al escribir en el log: {e}", "Error")
         return False
 
-      
+
 def searchPMCCode(ruta:str) -> list:
     """Busca el codigo PMC en el archivo .txt"""
     list_codigo = []
-    print(f"Buscando códigos PMC en: {ruta}")
-    try:
-        with open(ruta, "r") as f:
-            for line in f:
-                list_codigo.append(line.strip())
-        print(f"Codigos PMC encontrados: {list_codigo}")
-        return list_codigo
-    except FileNotFoundError:
-        Messagebox.show_error("Archivo codigosSIM.txt no encontrado", "Error")
-        return None
+    if online_data["mode"] == "Error con Drive":
+        print(f"Buscando códigos PMC en: {ruta}")
+        try:
+            with open(ruta, "r") as f:
+                for line in f:
+                    list_codigo.append(line.strip())
+            print(f"Codigos PMC encontrados: {list_codigo}")
+            return list_codigo
+        except FileNotFoundError:
+            Messagebox.show_error("Archivo codigosSIM.txt no encontrado", "Error")
+            return None
     
+    print(f"Buscando codigos en Google Drive: {online_data['payload']}")
+        # Procesar el contenido de Google Drive
+    for line in online_data['payload'].split('\n'):
+        list_codigo.append(line.strip())
+        print(f"Codigos PMC encontrados: {list_codigo}")
+    
+    #CONTROL DE FECHA DE ACTUALIZACION DEL ARCHIVO DE CODIGOS, SI LA FECHA DE DRIVE ES MAS RECIENTE QUE LA LOCAL, SE ACTUALIZA EL ARCHIVO LOCAL
+    last_local_update = read_last_update_time("utils/codigosSIM.txt")
+    if do_update(last_local_update,payload_time_refresh):
+        print("Actualizando archivo de codigos desde Google Drive")
+        update_codes_text(list_codigo,"utils/codigosSIM.txt")
+    else:
+        write_online_codes_text(list_codigo)  
+        
+    return list_codigo
 
 async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codigo_pmc:list)-> None:
     """Crea el archivo CSV del PMC"""
     """Códigos de referencia para alarmas PC"""
+        
     ref_codigo_pmc = 1980
     ref_codigo_doble_pmc = 1982
     ref_codigo_alarma = 178
@@ -255,9 +274,13 @@ async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codi
         #TODO: Implementar lógica de control y actualización de códigos en lo local como online del archivo de codigosSIM.txt
         #Llamar funciones de updateDatos para comparacion de fechas y actualizacion del archivo de codigos
         
-        # Actualizar códigos en archivo de texto
-        with open("utils/codigosSIM.txt", "w") as f:
-            f.write(f"{int(last_codigo_pmc[0]) + 3}\n{int(last_codigo_pmc[1]) + 1}\n{time.strftime('%Y-%m-%d %H:%M:%S')}")
+        if online_data["mode"] == "Online":
+            print("Actualizando archivo de codigos desde Google Drive")
+            write_online_codes_text(last_codigo_pmc)
+        else:
+            # Actualizar códigos en archivo de texto
+            with open("utils/codigosSIM.txt", "w") as f:
+                f.write(f"{int(last_codigo_pmc[0]) + 3}\n{int(last_codigo_pmc[1]) + 1}\n{time.strftime('%Y-%m-%d %H:%M:%S')}")
         
         
         # AL FINALIZAR LA CREACION DEL CSV, SE MUEVEN LOS ARCHIVOS A LA CARPETA CORRESPONDIENTE
@@ -271,6 +294,21 @@ async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codi
         )
         print(f"✓ Archivo CSV creado: {csv_filename}")
         
+        #update_codes_text, read_last_update_time, do_update
+        #Verificacion de actualizacion del archivo de codigosSIM.txt o de Google Drive, si la fecha de Drive es mas reciente que la local, se actualiza el archivo local
+        last_local_update = read_last_update_time("utils/codigosSIM.txt")
+        if do_update(last_local_update,payload_time_refresh):
+            print("Actualizando archivo de codigos desde Google Drive")
+            update_codes_text(last_codigo_pmc,"utils/codigosSIM.txt")
+        else:
+            print("Archivo Google Drive actualizado con datos locales")
+            write_online_codes_text(last_codigo_pmc)
+
+            
+        print(f"Última actualización del archivo de códigos: {last_local_update}")
+        print(f"Última actualización del archivo de códigos en Drive: {payload_time_refresh}")
+            
+        
     except FileNotFoundError:
         Messagebox.show_error(f"Archivo de referencia no encontrado: utils/{hardware_name}.csv", "Error")
         return
@@ -278,7 +316,7 @@ async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codi
         Messagebox.show_error(f"Error al crear CSV: {e}", "Error")
         refreshLogFile(
             f"PMC: {pmc_name} - Codigo: {pmc_code} - Hardware: {hardware_name} - "
-            f"Fecha: {time.strftime('%Y-%m-%d %H:%M:%S')} - ERROR al dar de Alta el PMC"
+            f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - ERROR al dar de Alta el PMC"
         )
         return
 
@@ -299,11 +337,9 @@ async def createTGDFile(pmc_code):
         for row in range(1, sheet.max_row+1):
             cell = sheet.cell(row=row, column=2)
             if isinstance(cell.value, str):
-                print(f"Revisando celda B{row}: {cell.value}")
+                #DEBUG: print(f"Revisando celda B{row}: {cell.value}")
                 cell.value = re.sub("RTU", pmc_code,cell.value,flags=re.IGNORECASE)
-                #texto = re.sub("RTU", pmc_code,cell.value,flags=re.IGNORECASE)
-                #cell.value = texto
-                #print(f"Nueva celda B{row}: {cell.value}")
+
                 
         openpyxl.writer.excel.save_workbook(tagGroup, tgd_filename)    
 
