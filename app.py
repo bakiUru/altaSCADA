@@ -11,14 +11,27 @@ from ttkbootstrap.dialogs import Messagebox
 from getDatos import read_codes_text, write_online_codes_text
 from updateCodeSIM import update_codes_text, read_last_update_time, do_update
 import ctypes
+from load_modal import LoadModal
+
+
 ruta_alta = "PMC_Creados/"
 ruta_codigos = "utils/codigosSIM.txt"
 
 #llamamos a la funcion de conexion a la Api de Google Drive
-online_data = read_codes_text()
-"""Capturamos la ultima fecha de actualización del archivo de códigos desde Drive o local para mostrar en la interfaz y para comparar si es necesario actualizar el archivo local. Si no se puede conectar a Drive, se asume que el archivo local es el más reciente."""""
-payload_time_refresh = online_data["payload"].splitlines()[2].strip()
-print(f"Modo de lectura: {online_data['mode']} - Status: {online_data['status']}")
+try:
+    online_data = read_codes_text()
+    """Capturamos la ultima fecha de actualización del archivo de códigos desde Drive o local para mostrar en la interfaz y para comparar si es necesario actualizar el archivo local. Si no se puede conectar a Drive, se asume que el archivo local es el más reciente."""""
+    if online_data["payload"] != "":
+        payload_time_refresh = online_data["payload"].splitlines()[2].strip()
+        print(f"Modo de lectura: {online_data['mode']} - Status: {online_data['status']}")
+    else:
+        payload_time_refresh = "1970-01-01 00:00:00"
+except Exception as e:
+    online_data = {"payload": "", "mode": "local", "status": f"Error al conectar con Drive: {e}"}
+    payload_time_refresh = "1970-01-01 00:00:00"
+    print(f"Modo de lectura: {online_data['mode']} - Status: {online_data['status']}")
+
+    
 
 
 # 1. Configurar el ID para la barra de tareas antes de crear la ventana
@@ -50,7 +63,7 @@ class App(ttk.Window):
         
         #infomarcion de Tabla de Variables
         ttk.Label(main_frame, text="Tablas de Variables conforme version 1.0.7 del Programa control SGD-RTUX", font=("Arial", 8), bootstyle="secondary").pack(pady=(0,10))
-        if online_data["mode"] == "Error con Drive":
+        if online_data["mode"] == "local":
             ttk.Label(main_frame, text="Error al conectar con Google Drive. Usando archivo local.", font=("Arial", 8), bootstyle="danger").pack(pady=(0,10))
         else:
             ttk.Label(main_frame, text="--App Sincronizada--", font=("Arial", 8), bootstyle="success").pack(pady=(0,10)) 
@@ -101,8 +114,10 @@ class App(ttk.Window):
         #footer con separador y texto de desarrollador
         ttk.Separator(main_frame, bootstyle="secondary").pack(pady=5, fill=X)
         ttk.Label(main_frame, text="Desarrollado por: Marcelo Rodriguez SGD - 2026", font=("Arial", 10), bootstyle="secondary").pack(pady=10)
-        ttk.Label(main_frame, text="Ver 1.1", font=("Arial", 9), bootstyle="secondary").pack(pady=(0,10))
+        ttk.Label(main_frame, text="Ver 1.2", font=("Arial", 9), bootstyle="secondary").pack(pady=(0,10))
+       
 
+          
     def handle_create_pmc(self):
         """
         Wrapper síncrono para llamar a la función asíncrona
@@ -122,7 +137,8 @@ class App(ttk.Window):
             return False
         return True
 
-    async def createPMCFile(self):
+    async def createPMCFile(self,load_modal=None):
+
         """Crea el archivo PMC con los datos ingresados"""
         if not self.validateInputs():
             return
@@ -139,29 +155,45 @@ class App(ttk.Window):
         if answer != "Yes":
             Messagebox.show_info("Cancelacion creacion de archivos PMC","PMC File")
             return
+        else:
+            # Mostrar modal de carga
+            if load_modal is None:
+                load_modal = LoadModal(self.root, message="Generando Archivos...",)
+            load_modal.update()  # Asegura que el modal se muestre antes de continuar
+            await asyncio.sleep(0.1)  # Permite que el modal se renderice correctamente
             
+            
+
+            
+        #empieza Modal de carga
+        
         # Crear carpeta
         createPMCFolder(pmc_name)
-        
+        load_modal.update()  # Actualiza el modal después de crear la carpeta
         # Buscar códigos
         codigosPMC = searchPMCCode(ruta_codigos)
+        
         if not codigosPMC:
+            load_modal.destroy()
             return
         
         try:
+            load_modal.update()  # Actualiza el modal antes de iniciar la creación de archivos
             # Ejecutar funciones asíncronas
             await createTGDFile(pmc_code)
             await createCSVFile(hardware_type, pmc_name, pmc_code, codigosPMC)
             
+            #cierro el modal de carga
+            load_modal.destroy()
             Messagebox.ok("Archivo PMC creado con éxito", "PMC File")
             
             # Limpiar inputs
             self.pmc_code_var.set("")
             self.pmc_name_var.set("")
             self.hardware_var.set("")
-            
         except Exception as e:
             Messagebox.show_error(f"Error al crear los archivos: {e}", "Error")
+
 
 
 def createPMCFolder(name_folder:str) -> None:
@@ -187,35 +219,39 @@ def refreshLogFile(data:str) -> bool:
 
 
 def searchPMCCode(ruta:str) -> list:
-    """Busca el codigo PMC en el archivo .txt"""
-    list_codigo = []
-    if online_data["mode"] == "Error con Drive":
+    #CONTROL DE FECHA DE ACTUALIZACION DEL ARCHIVO DE CODIGOS, SI LA FECHA DE DRIVE ES MAS RECIENTE QUE LA LOCAL, SE ACTUALIZA EL ARCHIVO LOCAL
+    last_local_update = read_last_update_time(ruta_codigos)
+    
+    if do_update(last_local_update,payload_time_refresh) and online_data["mode"] == "drive":
+        list_codigo_online = []
+        print("Actualizando archivo de codigos desde Google Drive")
+        print(f"Buscando codigos en Google Drive: {online_data['payload']}")
+        # Procesar el contenido de Google Drive
+        for line in online_data['payload'].split('\n'):
+            list_codigo_online.append(line.strip())
+            print(f"Codigos PMC encontrados en drive: {list_codigo_online}")
+        
+        update_codes_text(list_codigo_online,ruta_codigos)
+        return list_codigo_online
+
+    else:
+        """Busca el codigo PMC en el archivo .txt"""
         print(f"Buscando códigos PMC en: {ruta}")
         try:
+            list_codigo = []
             with open(ruta, "r") as f:
                 for line in f:
                     list_codigo.append(line.strip())
-            print(f"Codigos PMC encontrados: {list_codigo}")
-            return list_codigo
+                print(f"Codigos PMC encontrados locales: {list_codigo}")
+                write_online_codes_text(list_codigo)
+                return list_codigo
         except FileNotFoundError:
-            Messagebox.show_error("Archivo codigosSIM.txt no encontrado", "Error")
-            return None
-    
-    print(f"Buscando codigos en Google Drive: {online_data['payload']}")
-        # Procesar el contenido de Google Drive
-    for line in online_data['payload'].split('\n'):
-        list_codigo.append(line.strip())
-        print(f"Codigos PMC encontrados: {list_codigo}")
-    
-    #CONTROL DE FECHA DE ACTUALIZACION DEL ARCHIVO DE CODIGOS, SI LA FECHA DE DRIVE ES MAS RECIENTE QUE LA LOCAL, SE ACTUALIZA EL ARCHIVO LOCAL
-    last_local_update = read_last_update_time("utils/codigosSIM.txt")
-    if do_update(last_local_update,payload_time_refresh):
-        print("Actualizando archivo de codigos desde Google Drive")
-        update_codes_text(list_codigo,"utils/codigosSIM.txt")
-    else:
-        write_online_codes_text(list_codigo)  
+                Messagebox.show_error("Archivo codigosSIM.txt no encontrado", "Error")
+                return None
         
-    return list_codigo
+
+    
+
 
 async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codigo_pmc:list)-> None:
     """Crea el archivo CSV del PMC"""
@@ -232,7 +268,7 @@ async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codi
     print(f"Código de alarma PMC PC: {codigo_alarma_PMC_PC}")
  
     
-  
+    print(last_codigo_pmc)
     csv_filename = f"{pmc_code}.csv"
     
     try:
@@ -271,17 +307,25 @@ async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codi
         with open(csv_filename, "w", encoding="utf-8") as f:
             f.write(contenido)
         
+        #lista de codigos PMC actualizada
+        updated_pmc_codes = [str(int(last_codigo_pmc[0]) + 3), str(int(last_codigo_pmc[1]) + 1), time.strftime('%Y-%m-%d %H:%M:%S')]
         #TODO: Implementar lógica de control y actualización de códigos en lo local como online del archivo de codigosSIM.txt
         #Llamar funciones de updateDatos para comparacion de fechas y actualizacion del archivo de codigos
-        
-        if online_data["mode"] == "Online":
-            print("Actualizando archivo de codigos desde Google Drive")
-            write_online_codes_text(last_codigo_pmc)
-        else:
-            # Actualizar códigos en archivo de texto
+     
+        print(online_data['mode'])
+        if online_data['mode'] == 'drive':
+            print("Actualizando archivo de codigos Creados en Google Drive y en local")
+            write_online_codes_text(updated_pmc_codes)
+            # Actualizar tambien códigos en archivo de texto
             with open("utils/codigosSIM.txt", "w") as f:
-                f.write(f"{int(last_codigo_pmc[0]) + 3}\n{int(last_codigo_pmc[1]) + 1}\n{time.strftime('%Y-%m-%d %H:%M:%S')}")
-        
+                for line in updated_pmc_codes:
+                    f.write(line + "\n")
+        else:
+            # Actualizar códigos en archivo de texto solamente
+            print(f"Actualizando archivo de codigos local: utils/codigosSIM.txt")
+            with open("utils/codigosSIM.txt", "w") as f:
+                for line in updated_pmc_codes:
+                    f.write(line + "\n")
         
         # AL FINALIZAR LA CREACION DEL CSV, SE MUEVEN LOS ARCHIVOS A LA CARPETA CORRESPONDIENTE
         # Mover archivos
@@ -294,20 +338,8 @@ async def createCSVFile(hardware_name:str, pmc_name:str, pmc_code:str, last_codi
         )
         print(f"✓ Archivo CSV creado: {csv_filename}")
         
-        #update_codes_text, read_last_update_time, do_update
-        #Verificacion de actualizacion del archivo de codigosSIM.txt o de Google Drive, si la fecha de Drive es mas reciente que la local, se actualiza el archivo local
-        last_local_update = read_last_update_time("utils/codigosSIM.txt")
-        if do_update(last_local_update,payload_time_refresh):
-            print("Actualizando archivo de codigos desde Google Drive")
-            update_codes_text(last_codigo_pmc,"utils/codigosSIM.txt")
-        else:
-            print("Archivo Google Drive actualizado con datos locales")
-            write_online_codes_text(last_codigo_pmc)
 
-            
-        print(f"Última actualización del archivo de códigos: {last_local_update}")
-        print(f"Última actualización del archivo de códigos en Drive: {payload_time_refresh}")
-            
+
         
     except FileNotFoundError:
         Messagebox.show_error(f"Archivo de referencia no encontrado: utils/{hardware_name}.csv", "Error")

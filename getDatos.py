@@ -66,7 +66,7 @@ def read_codes_text() -> dict | str:
             service = _build_drive_service()
             request = service.files().get_media(fileId=DRIVE_FILE_ID, supportsAllDrives=True)
         except (FileNotFoundError, RuntimeError):
-            return {"payload":_read_local_codes_text(), "mode": "Error con Drive", "status": "Error con Drive, usando local"}
+            return {"payload":_read_local_codes_text(), "mode": "local", "status": "Error con Drive, usando local"}
 
         try:
             from googleapiclient.http import MediaIoBaseDownload
@@ -100,10 +100,12 @@ def write_online_codes_text(content: list) -> None:
         except ImportError as exc:
             raise RuntimeError("Falta google-api-python-client para subir a Drive") from exc
 
-        payload = "\n".join(content) + "\n" + datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        payload = "\n".join(content)
+        
         media_body = MediaIoBaseUpload(
             io.BytesIO(payload.encode("utf-8")),
             mimetype="text/plain",
+            chunksize = -1,
             resumable=False,
         )
         service.files().update(
@@ -111,6 +113,7 @@ def write_online_codes_text(content: list) -> None:
             media_body=media_body,
             supportsAllDrives=True,
         ).execute()
+        print(f"Subiendo contenido a Drive: {payload}")
         return
 
     # Fallback local cuando no hay Drive o credenciales validas.
